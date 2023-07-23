@@ -1,10 +1,11 @@
+use gloo_worker::Spawnable;
 use leptos::html::*;
 use leptos::*;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement;
 use web_sys::SubmitEvent;
 
-use crate::core::*;
+use crate::{GetFromDictionaryWorker, HelperStruct};
 
 #[component]
 pub fn HomePage(cx: Scope) -> impl IntoView {
@@ -23,24 +24,31 @@ pub fn HomeContent(cx: Scope) -> impl IntoView {
 
     let anagram_input_element: NodeRef<Input> = create_node_ref(cx);
     let letter_input_element: NodeRef<Input> = create_node_ref(cx);
-
+    
+    
     let on_submit = move |e: SubmitEvent| {
         e.prevent_default();
 
         let value = anagram_input_element().unwrap().value();
 
         set_anagram_letters.set(value);
-
-        let mut output_words = get_from_dictionary(
-            &*anagram_letters.get_untracked(),
-            magic_letter.get_untracked(),
-            letter_count.get_untracked(),
-        );
-
-        output_words.sort();
-
-        set_found_word_amount(output_words.len());
-        set_anagram_output.set(output_words);
+        
+        let mut bridge = GetFromDictionaryWorker::spawner().spawn("/worker.js");
+        
+        spawn_local(async move {
+            let mut output_words = bridge.run(
+                HelperStruct {
+                    reference: anagram_letters.get_untracked().to_string(),
+                    magic_letter: magic_letter.get_untracked(),
+                    letter_count: letter_count.get_untracked(),
+                }
+            ).await;
+            
+            output_words.sort();
+            
+            set_found_word_amount(output_words.len());
+            set_anagram_output.set(output_words);
+        });
     };
 
     view! { cx,
@@ -117,40 +125,4 @@ pub fn HomeContent(cx: Scope) -> impl IntoView {
             </div>
         </div>
     }
-}
-
-fn get_from_dictionary(reference: &str, magic_letter: char, letter_count: usize) -> Vec<String> {
-    let mut output_words: Vec<String> = vec![];
-    let mut word_does_contain;
-    let magic_char_upper = magic_letter.to_uppercase().collect::<Vec<char>>()[0];
-
-    for word in DICTIONARY {
-        word_does_contain = true;
-
-        if word.len() < letter_count {
-            continue;
-        }
-
-        let word_chars: Vec<char> = word.chars().collect();
-        let mut reference_chars: Vec<char> = reference.to_uppercase().chars().collect();
-
-        if !word_chars.contains(&magic_char_upper) {
-            continue;
-        }
-
-        reference_chars.push(magic_char_upper);
-
-        for letter in word_chars {
-            if !reference_chars.contains(&letter) {
-                word_does_contain = false;
-                break;
-            }
-        }
-
-        if word_does_contain {
-            output_words.push(word.to_string());
-        }
-    }
-
-    output_words
 }

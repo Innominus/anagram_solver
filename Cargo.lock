@@ -51,6 +51,7 @@ dependencies = [
  "leptos_router",
  "log",
  "serde",
+ "serde-lite",
  "serde-wasm-bindgen",
  "serde_json",
  "wasm-bindgen",
@@ -1522,6 +1523,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b88756493a5bd5e5395d53baa70b194b05764ab85b59e43e4b8f4e1192fa9b1"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde-lite"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "84405559830d5d639a118c6c803be3b4c49d8a46dd4c74384ef5c0b2b6437699"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

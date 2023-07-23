@@ -1,10 +1,5 @@
-mod components;
-mod pages;
-mod core;
-mod store;
-
+use anagram_solver::core::App;
 use leptos::*;
-use core::*;
 
 
 pub fn main() {
