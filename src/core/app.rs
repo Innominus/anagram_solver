@@ -15,20 +15,14 @@ pub fn App(cx: Scope) -> impl IntoView {
                 <Route
                     path="/"
                     view=move |cx| {
-                        view! { cx, <NavOverlay/> }
-                    }
-                >
-                    <Route
-                        path="/"
-                        view=move |cx| {
-                            view! { cx,
-                                <FadeIn>
-                                    <HomePage/>
-                                </FadeIn>
-                            }
+                        view! { cx,
+                            <FadeIn>
+                                <HomePage/>
+                            </FadeIn>
                         }
-                    />
-                </Route>
+                    }
+                />
+
             </Routes>
         </Router>
     }

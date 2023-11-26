@@ -25,6 +25,7 @@ pub fn HomeContent(cx: Scope) -> impl IntoView {
     let anagram_input_element: NodeRef<Input> = create_node_ref(cx);
     let letter_input_element: NodeRef<Input> = create_node_ref(cx);
     
+    let mut bridge = GetFromDictionaryWorker::spawner().spawn("/worker.js");
     
     let on_submit = move |e: SubmitEvent| {
         e.prevent_default();
@@ -33,10 +34,10 @@ pub fn HomeContent(cx: Scope) -> impl IntoView {
 
         set_anagram_letters.set(value);
         
-        let mut bridge = GetFromDictionaryWorker::spawner().spawn("/worker.js");
+        let mut inner_bridge = bridge.fork();
         
         spawn_local(async move {
-            let mut output_words = bridge.run(
+            let mut output_words = inner_bridge.run(
                 HelperStruct {
                     reference: anagram_letters.get_untracked().to_string(),
                     magic_letter: magic_letter.get_untracked(),
